@@ -1,10 +1,9 @@
 #include <iostream>
-#include <satcomms_kvh/Dummy.hpp>
+#include <satcomms_kvh/SatcommsStatusManager.hpp>
 
 int main(int argc, char** argv)
 {
-    satcomms_kvh::DummyClass dummyClass;
-    dummyClass.welcome();
+    satcomms_kvh::SatcommsStatusManager satcommsStatusManager;
 
     return 0;
 }
