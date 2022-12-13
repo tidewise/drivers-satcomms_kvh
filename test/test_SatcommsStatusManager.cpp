@@ -1,3 +1,4 @@
+#include <base/Time.hpp>
 #include <boost/regex.hpp>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -19,9 +20,9 @@ TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_set_url_is_called)
 TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_set_timeout_is_called)
 {
     satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
-    satcommsstatusmanager.setTimeout(300);
+    satcommsstatusmanager.setTimeout(base::Time::fromMilliseconds(300));
 
-    ASSERT_EQ(satcommsstatusmanager.timeout_miliseconds, 300);
+    ASSERT_EQ(satcommsstatusmanager.timeout, base::Time::fromMilliseconds(300));
 }
 
 TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_get_url_is_called)
@@ -29,7 +30,7 @@ TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_get_url_is_called)
     satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
 
     satcommsstatusmanager.setURL("https://www.google.com/");
-    satcommsstatusmanager.setTimeout(1000);
+    satcommsstatusmanager.setTimeout(base::Time::fromMilliseconds(500));
     satcommsstatusmanager.getURLData();
     boost::smatch matches;
     regex_search(satcommsstatusmanager.url_data, matches, boost::regex("(google)"));
@@ -42,7 +43,7 @@ TEST_F(SatcommsStatusManagerTest, it_should_return_an_empty_string_when_timeout_
     satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
 
     satcommsstatusmanager.setURL("https://www.google.com/");
-    satcommsstatusmanager.setTimeout(1);
+    satcommsstatusmanager.setTimeout(base::Time::fromMilliseconds(1));
     satcommsstatusmanager.getURLData();
     boost::smatch matches;
     regex_search(satcommsstatusmanager.url_data, matches, boost::regex("(google)"));
@@ -108,8 +109,8 @@ TEST_F(SatcommsStatusManagerTest, it_should_return_a_SatcommsStatusManagerStruct
     file.close();
 
     SatcommsStatus result = satcommsstatusmanager.getSatcommsStatus();
-
     SatcommsStatus expected;
+    expected.timestamp = base::Time::now();
     expected.online_offline_state = "UNKNOWN";
     expected.flrx_snr = -999.99;
     expected.antenna_status_azimuth = 0;
@@ -126,5 +127,20 @@ TEST_F(SatcommsStatusManagerTest, it_should_return_a_SatcommsStatusManagerStruct
     expected.tx_stats_rl_carrier = "UNKNOWN";
     expected.tx_stats_rl_power = 0;
 
+    ASSERT_NEAR(result.timestamp.toMilliseconds(), expected.timestamp.toMilliseconds(),10);
     ASSERT_EQ(result.online_offline_state, expected.online_offline_state);
+    ASSERT_EQ(result.flrx_snr, expected.flrx_snr);
+    ASSERT_EQ(result.antenna_status_azimuth, expected.antenna_status_azimuth);
+    ASSERT_EQ(result.antenna_status_elevation, expected.antenna_status_elevation);
+    ASSERT_EQ(result.antenna_state, expected.antenna_state);
+    ASSERT_EQ(result.satellite, expected.satellite);
+    ASSERT_EQ(result.beam, expected.beam);
+    ASSERT_EQ(result.frequency, expected.frequency);
+    ASSERT_EQ(result.modem_state, expected.modem_state);
+    ASSERT_EQ(result.last_login, expected.last_login);
+    ASSERT_EQ(result.rx_stats_fl_state, expected.rx_stats_fl_state);
+    ASSERT_EQ(result.rx_stats_fl_carrier, expected.rx_stats_fl_carrier);
+    ASSERT_EQ(result.tx_stats_rl_state, expected.tx_stats_rl_state);
+    ASSERT_EQ(result.tx_stats_rl_carrier, expected.tx_stats_rl_carrier);
+    ASSERT_EQ(result.tx_stats_rl_power, expected.tx_stats_rl_power);
 }

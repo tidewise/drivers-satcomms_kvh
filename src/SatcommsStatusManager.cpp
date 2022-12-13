@@ -21,9 +21,9 @@ void SatcommsStatusManager::setURL(string url)
     url_link = url;
 }
 
-void SatcommsStatusManager::setTimeout(uint16_t timeout)
+void SatcommsStatusManager::setTimeout(base::Time timeout)
 {
-    timeout_miliseconds = timeout;
+    this->timeout = timeout;
 }
 
 void SatcommsStatusManager::getURLData()
@@ -33,7 +33,7 @@ void SatcommsStatusManager::getURLData()
     curl_easy_setopt(curl_handle, CURLOPT_URL, url_link.c_str());
     // disable progress meter, set to 0L to enable it
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, timeout_miliseconds);
+    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, timeout.toMilliseconds());
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &url_data);
     curl_easy_perform(curl_handle);
@@ -64,6 +64,7 @@ SatcommsStatus SatcommsStatusManager::getSatcommsStatus()
     status_map = processText(m_status_id);
 
     SatcommsStatus status;
+    status.timestamp = base::Time::now();
     status.online_offline_state = status_map["online_offline_state"];
     status.flrx_snr = convertStringToFloat(status_map["flrx_snr"]);
     status.antenna_status_azimuth = convertStringToFloat(status_map["antenna_status_az"]);

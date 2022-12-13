@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <base/Time.hpp>
 
 namespace satcomms_kvh {
     class SatcommsStatusManager {
@@ -33,11 +34,11 @@ namespace satcomms_kvh {
     public:
         std::string url_link;
         std::string url_data;
-        uint16_t timeout_miliseconds = 1000;
+        base::Time timeout = base::Time::fromSeconds(1);
         SatcommsStatusManager();
 
         void setURL(std::string url);
-        void setTimeout(uint16_t timeout);
+        void setTimeout(base::Time timeout);
         /** Callback function used by the curl library to fill variable with the HTML
          * content
          */
