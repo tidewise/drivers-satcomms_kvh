@@ -12,7 +12,7 @@ size_t SatcommsStatusManager::writeCallback(void* contents,
     size_t nmemb,
     void* userp)
 {
-    ((string*)userp)->append((char*)contents, size * nmemb);
+    static_cast<string*>(userp)->append(static_cast<char*>(contents), size * nmemb);
     return size * nmemb;
 }
 
