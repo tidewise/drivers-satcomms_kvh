@@ -12,7 +12,7 @@
 namespace satcomms_kvh {
     class SatcommsStatusManager {
     private:
-        const std::vector<std::string> status_id = {
+        const std::vector<std::string> m_status_id = {
             "online_offline_state",
             "flrx_snr",
             "antenna_status_az",
@@ -33,9 +33,11 @@ namespace satcomms_kvh {
     public:
         std::string url_link;
         std::string url_data;
+        uint16_t timeout_miliseconds = 1000;
         SatcommsStatusManager();
 
-        void setURL(std::string);
+        void setURL(std::string url);
+        void setTimeout(uint16_t timeout);
         /** Callback function used by the curl library to fill variable with the HTML
          * content
          */
@@ -54,6 +56,8 @@ namespace satcomms_kvh {
         /**  Fill the the struct SatcomsStatus with the obtained data
          */
         SatcommsStatus getSatcommsStatus();
+
+        float convertStringToFloat(std::string text);
     };
 
 } // end namespace satcomms_kvh

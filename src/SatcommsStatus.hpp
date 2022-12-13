@@ -6,20 +6,20 @@
 namespace satcomms_kvh {
     struct SatcommsStatus {
         std::string online_offline_state = "";
-        std::string flrx_snr = "";
-        std::string antenna_status_az = "";
-        std::string antenna_status_el = "";
+        float flrx_snr = 0;
+        float antenna_status_azimuth = 0;
+        float antenna_status_elevation = 0;
         std::string antenna_state = "";
-        std::string satelliteOrb = "";
-        std::string beamInfo = "";
-        std::string satellite_dlfreq = "";
+        std::string satellite = "";
+        std::string beam = "";
+        float frequency = 0;
         std::string modem_state = "";
-        std::string login_last = "";
-        std::string flrx_state = "";
-        std::string flrx_carrier = "";
-        std::string rltx_state = "";
-        std::string rltx_carrier = "";
-        std::string rltx_power = "";
+        std::string last_login = "";
+        std::string rx_stats_fl_state = "";
+        std::string rx_stats_fl_carrier = "";
+        std::string tx_stats_rl_state = "";
+        std::string tx_stats_rl_carrier = "";
+        float tx_stats_rl_power = 0;
     };
 }
 
