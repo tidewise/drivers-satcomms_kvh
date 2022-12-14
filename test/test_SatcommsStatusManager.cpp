@@ -1,3 +1,4 @@
+#include <base/Float.hpp>
 #include <base/Time.hpp>
 #include <boost/regex.hpp>
 #include <fstream>
@@ -9,91 +10,36 @@ using namespace satcomms_kvh;
 struct SatcommsStatusManagerTest : public ::testing::Test {
 };
 
-TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_set_url_is_called)
-{
-    satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
-    satcommsstatusmanager.setURL("https://www.google.com/");
-
-    ASSERT_STREQ(satcommsstatusmanager.url_link.c_str(), "https://www.google.com/");
-}
-
-TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_set_timeout_is_called)
-{
-    satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
-    satcommsstatusmanager.setTimeout(base::Time::fromMilliseconds(300));
-
-    ASSERT_EQ(satcommsstatusmanager.timeout, base::Time::fromMilliseconds(300));
-}
-
 TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_get_url_is_called)
 {
-    satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
+    satcomms_kvh::SatcommsStatusManager satcomms_status_manager;
 
-    satcommsstatusmanager.setURL("https://www.google.com/");
-    satcommsstatusmanager.setTimeout(base::Time::fromMilliseconds(500));
-    satcommsstatusmanager.getURLData();
+    satcomms_status_manager.setURL("https://www.google.com/");
+    satcomms_status_manager.setTimeout(base::Time::fromMilliseconds(500));
+    bool status = satcomms_status_manager.getURLData();
     boost::smatch matches;
-    regex_search(satcommsstatusmanager.url_data, matches, boost::regex("(google)"));
+    regex_search(satcomms_status_manager.url_data, matches, boost::regex("(google)"));
     std::string result = matches[1];
     ASSERT_STREQ(result.c_str(), "google");
 }
 
 TEST_F(SatcommsStatusManagerTest, it_should_return_an_empty_string_when_timeout_is_called)
 {
-    satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
+    satcomms_kvh::SatcommsStatusManager satcomms_status_manager;
 
-    satcommsstatusmanager.setURL("https://www.google.com/");
-    satcommsstatusmanager.setTimeout(base::Time::fromMilliseconds(1));
-    satcommsstatusmanager.getURLData();
-    boost::smatch matches;
-    regex_search(satcommsstatusmanager.url_data, matches, boost::regex("(google)"));
-    std::string result = matches[1];
-    ASSERT_STREQ(result.c_str(), "");
-}
+    satcomms_status_manager.setURL("https://www.google.com/");
+    satcomms_status_manager.setTimeout(base::Time::fromMilliseconds(3));
+    base::Time timestamp_before = base::Time::now();
+    bool status = satcomms_status_manager.getURLData();
+    base::Time timestamp_after = base::Time::now();
 
-TEST_F(SatcommsStatusManagerTest, it_should_return_a_map_with_results)
-{
-    satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
-    std::string path = std::getenv("SRC_DIR");
-    path += "/satcomms.html";
-    std::ifstream file(path);
-
-    if (file.is_open()) { // checking whether the file is open
-        std::stringstream strStream;
-        strStream << file.rdbuf(); // read the file
-        satcommsstatusmanager.url_data = strStream.str();
-    }
-    else {
-        std::cout << "File not found" << std::endl;
-    }
-    file.close();
-
-    const std::vector<std::string> features = {
-        "online_offline_state",
-        "flrx_snr",
-        "antenna_status_az",
-        "antenna_status_el",
-        "antenna_state",
-        "satelliteOrb",
-        "beamInfo",
-        "satellite_dlfreq",
-        "modem_state",
-        "login_last",
-        "flrx_state",
-        "flrx_carrier",
-        "rltx_state",
-        "rltx_carrier",
-        "rltx_power",
-    };
-
-    std::map<std::string, std::string> result =
-        satcommsstatusmanager.processText(features);
-    ASSERT_EQ(result.size(), 15);
+    ASSERT_FALSE(status);
+    ASSERT_GE(timestamp_after.toMilliseconds() - timestamp_before.toMilliseconds(), 3);
 }
 
 TEST_F(SatcommsStatusManagerTest, it_should_return_a_SatcommsStatusManagerStruct)
 {
-    satcomms_kvh::SatcommsStatusManager satcommsstatusmanager;
+    satcomms_kvh::SatcommsStatusManager satcomms_status_manager;
     std::string path = std::getenv("SRC_DIR");
     path += "/satcomms.html";
     std::ifstream file(path);
@@ -101,46 +47,32 @@ TEST_F(SatcommsStatusManagerTest, it_should_return_a_SatcommsStatusManagerStruct
     if (file.is_open()) {
         std::stringstream strStream;
         strStream << file.rdbuf();
-        satcommsstatusmanager.url_data = strStream.str();
+        satcomms_status_manager.url_data = strStream.str();
     }
     else {
         std::cout << "File not found" << std::endl;
     }
     file.close();
 
-    SatcommsStatus result = satcommsstatusmanager.getSatcommsStatus();
-    SatcommsStatus expected;
-    expected.timestamp = base::Time::now();
-    expected.online_offline_state = "UNKNOWN";
-    expected.flrx_snr = -999.99;
-    expected.antenna_status_azimuth = 0;
-    expected.antenna_status_elevation = 0;
-    expected.antenna_state = "INITIALIZING";
-    expected.satellite = "0";
-    expected.beam = "UNKNOWN-BAND: UNKNOWN";
-    expected.frequency = 0;
-    expected.modem_state = "WAITING_FOR_RX_LOCK";
-    expected.last_login = "UNKNOWN";
-    expected.rx_stats_fl_state = "UNKNOWN";
-    expected.rx_stats_fl_carrier = "UNKNOWN";
-    expected.tx_stats_rl_state = "UNKNOWN";
-    expected.tx_stats_rl_carrier = "UNKNOWN";
-    expected.tx_stats_rl_power = 0;
+    base::Time timestamp_before = base::Time::now();
+    SatcommsStatus result = satcomms_status_manager.parseSatcommsStatus();
+    base::Time timestamp_after = base::Time::now();
 
-    ASSERT_NEAR(result.timestamp.toMilliseconds(), expected.timestamp.toMilliseconds(),10);
-    ASSERT_EQ(result.online_offline_state, expected.online_offline_state);
-    ASSERT_EQ(result.flrx_snr, expected.flrx_snr);
-    ASSERT_EQ(result.antenna_status_azimuth, expected.antenna_status_azimuth);
-    ASSERT_EQ(result.antenna_status_elevation, expected.antenna_status_elevation);
-    ASSERT_EQ(result.antenna_state, expected.antenna_state);
-    ASSERT_EQ(result.satellite, expected.satellite);
-    ASSERT_EQ(result.beam, expected.beam);
-    ASSERT_EQ(result.frequency, expected.frequency);
-    ASSERT_EQ(result.modem_state, expected.modem_state);
-    ASSERT_EQ(result.last_login, expected.last_login);
-    ASSERT_EQ(result.rx_stats_fl_state, expected.rx_stats_fl_state);
-    ASSERT_EQ(result.rx_stats_fl_carrier, expected.rx_stats_fl_carrier);
-    ASSERT_EQ(result.tx_stats_rl_state, expected.tx_stats_rl_state);
-    ASSERT_EQ(result.tx_stats_rl_carrier, expected.tx_stats_rl_carrier);
-    ASSERT_EQ(result.tx_stats_rl_power, expected.tx_stats_rl_power);
+    ASSERT_GE(result.timestamp.toMilliseconds(), timestamp_before.toMilliseconds());
+    ASSERT_LE(result.timestamp.toMilliseconds(), timestamp_after.toMilliseconds());
+    ASSERT_EQ(result.online_offline_state, "UNKNOWN");
+    ASSERT_EQ(result.flrx_snr, static_cast<float>(-999.99));
+    ASSERT_TRUE(std::isnan(result.antenna_status_azimuth));
+    ASSERT_TRUE(std::isnan(result.antenna_status_elevation));
+    ASSERT_EQ(result.antenna_state, "INITIALIZING");
+    ASSERT_EQ(result.satellite, "0");
+    ASSERT_EQ(result.beam, "UNKNOWN-BAND: UNKNOWN");
+    ASSERT_TRUE(std::isnan(result.frequency));
+    ASSERT_EQ(result.modem_state, "WAITING_FOR_RX_LOCK");
+    ASSERT_EQ(result.last_login, "UNKNOWN");
+    ASSERT_EQ(result.rx_stats_fl_state, "UNKNOWN");
+    ASSERT_EQ(result.rx_stats_fl_carrier, "UNKNOWN");
+    ASSERT_EQ(result.tx_stats_rl_state, "UNKNOWN");
+    ASSERT_EQ(result.tx_stats_rl_carrier, "UNKNOWN");
+    ASSERT_TRUE(std::isnan(result.tx_stats_rl_power));
 }

@@ -1,4 +1,8 @@
 #include "SatcommsStatusManager.hpp"
+#include <base-logging/Logging.hpp>
+#include <base/Float.hpp>
+#include <boost/regex.hpp>
+#include <curl/curl.h>
 
 using namespace std;
 using namespace satcomms_kvh;
@@ -26,7 +30,7 @@ void SatcommsStatusManager::setTimeout(base::Time timeout)
     this->timeout = timeout;
 }
 
-void SatcommsStatusManager::getURLData()
+bool SatcommsStatusManager::getURLData()
 {
     curl_global_init(CURL_GLOBAL_ALL);
     CURL* curl_handle = curl_easy_init();
@@ -36,11 +40,19 @@ void SatcommsStatusManager::getURLData()
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, timeout.toMilliseconds());
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &url_data);
-    curl_easy_perform(curl_handle);
+
+    int curl_code = curl_easy_perform(curl_handle);
+    long http_code = 0;
+    curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 
     /* cleanup curl stuff */
     curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
+
+    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
+        return true;
+    }
+    return false;
 }
 
 map<string, string> SatcommsStatusManager::processText(vector<string> status_id)
@@ -59,9 +71,17 @@ map<string, string> SatcommsStatusManager::processText(vector<string> status_id)
 
 SatcommsStatus SatcommsStatusManager::getSatcommsStatus()
 {
-    map<string, string> status_map;
+    if (!getURLData()) {
+        throw std::runtime_error("Could not acquire URL data.");
+    }
+    else {
+        return parseSatcommsStatus();
+    }
+}
 
-    status_map = processText(m_status_id);
+SatcommsStatus SatcommsStatusManager::parseSatcommsStatus()
+{
+    map<string, string> status_map = processText(m_status_id);
 
     SatcommsStatus status;
     status.timestamp = base::Time::now();
@@ -85,14 +105,13 @@ SatcommsStatus SatcommsStatusManager::getSatcommsStatus()
     return status;
 }
 
-float SatcommsStatusManager::convertStringToFloat(std::string text)
+float SatcommsStatusManager::convertStringToFloat(string const text)
 {
-    float number;
     try {
-        number = std::stof(text);
+        return stof(text);
     }
-    catch (std::invalid_argument) {
-        number = 0;
+    catch (invalid_argument) {
+        LOG_ERROR_S << "could not parse " << text << " as float" << endl;
+        return base::unknown<float>();
     }
-    return number;
 }
