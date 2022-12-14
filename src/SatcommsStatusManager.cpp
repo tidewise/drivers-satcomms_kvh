@@ -20,12 +20,12 @@ size_t SatcommsStatusManager::writeCallback(void* contents,
     return size * nmemb;
 }
 
-void SatcommsStatusManager::setURL(string url)
+void SatcommsStatusManager::setURL(string const& url)
 {
     url_link = url;
 }
 
-void SatcommsStatusManager::setTimeout(base::Time timeout)
+void SatcommsStatusManager::setTimeout(base::Time const& timeout)
 {
     this->timeout = timeout;
 }
@@ -55,7 +55,7 @@ bool SatcommsStatusManager::getURLData()
     return false;
 }
 
-map<string, string> SatcommsStatusManager::processText(vector<string> status_id)
+map<string, string> SatcommsStatusManager::processText(vector<string> const& status_id)
 {
     map<string, string> status;
     boost::smatch matches;
@@ -105,12 +105,12 @@ SatcommsStatus SatcommsStatusManager::parseSatcommsStatus()
     return status;
 }
 
-float SatcommsStatusManager::convertStringToFloat(string const text)
+float SatcommsStatusManager::convertStringToFloat(string const& text)
 {
     try {
         return stof(text);
     }
-    catch (invalid_argument) {
+    catch (invalid_argument const&) {
         LOG_ERROR_S << "could not parse " << text << " as float" << endl;
         return base::unknown<float>();
     }
