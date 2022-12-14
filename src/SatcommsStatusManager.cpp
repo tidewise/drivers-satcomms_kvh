@@ -32,7 +32,6 @@ void SatcommsStatusManager::setTimeout(base::Time const& timeout)
 
 bool SatcommsStatusManager::getURLData()
 {
-    curl_global_init(CURL_GLOBAL_ALL);
     CURL* curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_URL, url_link.c_str());
     // disable progress meter, set to 0L to enable it
@@ -47,7 +46,6 @@ bool SatcommsStatusManager::getURLData()
 
     /* cleanup curl stuff */
     curl_easy_cleanup(curl_handle);
-    curl_global_cleanup();
 
     if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
         return true;

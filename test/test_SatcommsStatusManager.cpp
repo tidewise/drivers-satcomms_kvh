@@ -7,8 +7,7 @@
 
 using namespace satcomms_kvh;
 
-struct SatcommsStatusManagerTest : public ::testing::Test {
-};
+struct SatcommsStatusManagerTest : public ::testing::Test {};
 
 TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_get_url_is_called)
 {
@@ -20,6 +19,7 @@ TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_get_url_is_called)
     boost::smatch matches;
     regex_search(satcomms_status_manager.url_data, matches, boost::regex("(google)"));
     std::string result = matches[1];
+    ASSERT_TRUE(status);
     ASSERT_STREQ(result.c_str(), "google");
 }
 
@@ -27,14 +27,14 @@ TEST_F(SatcommsStatusManagerTest, it_should_return_an_empty_string_when_timeout_
 {
     satcomms_kvh::SatcommsStatusManager satcomms_status_manager;
 
-    satcomms_status_manager.setURL("https://www.google.com/");
-    satcomms_status_manager.setTimeout(base::Time::fromMilliseconds(3));
+    satcomms_status_manager.setURL("http://www.google.com:5000/");
+    satcomms_status_manager.setTimeout(base::Time::fromMilliseconds(1000));
     base::Time timestamp_before = base::Time::now();
     bool status = satcomms_status_manager.getURLData();
     base::Time timestamp_after = base::Time::now();
 
     ASSERT_FALSE(status);
-    ASSERT_GE(timestamp_after.toMilliseconds() - timestamp_before.toMilliseconds(), 3);
+    ASSERT_GE((timestamp_after - timestamp_before).toMilliseconds(), 500);
 }
 
 TEST_F(SatcommsStatusManagerTest, it_should_return_a_SatcommsStatusManagerStruct)

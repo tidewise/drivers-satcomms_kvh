@@ -1,3 +1,4 @@
+#include <curl/curl.h>
 #include <iostream>
 #include <satcomms_kvh/SatcommsStatus.hpp>
 #include <satcomms_kvh/SatcommsStatusManager.hpp>
@@ -11,6 +12,8 @@ int main(int argc, char** argv)
         printf("Please provide Satcomms IP Address: %s <URL>\n", argv[0]);
         return 1;
     }
+
+    curl_global_init(CURL_GLOBAL_ALL);
 
     SatcommsStatusManager satcomms_status_manager;
 
@@ -34,5 +37,7 @@ int main(int argc, char** argv)
     cout << "tx_stats_rl_state: " << result.tx_stats_rl_state << endl;
     cout << "tx_stats_rl_carrier: " << result.tx_stats_rl_carrier << endl;
     cout << "tx_stats_rl_power: " << result.tx_stats_rl_power << endl;
+
+    curl_global_cleanup();
     return 0;
 }
