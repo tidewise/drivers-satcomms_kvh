@@ -38,7 +38,9 @@ bool SatcommsStatusManager::getURLData()
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, timeout.toMilliseconds());
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &url_data);
+
+    string data;
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &data);
 
     int curl_code = curl_easy_perform(curl_handle);
     long http_code = 0;
@@ -47,6 +49,7 @@ bool SatcommsStatusManager::getURLData()
     /* cleanup curl stuff */
     curl_easy_cleanup(curl_handle);
 
+    url_data = data;
     if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
         return true;
     }
