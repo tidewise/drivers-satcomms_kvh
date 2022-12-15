@@ -20,42 +20,44 @@ size_t SatcommsStatusManager::writeCallback(void* contents,
     return size * nmemb;
 }
 
-void SatcommsStatusManager::setURL(string url)
+void SatcommsStatusManager::setURL(string const& url)
 {
     url_link = url;
 }
 
-void SatcommsStatusManager::setTimeout(base::Time timeout)
+void SatcommsStatusManager::setTimeout(base::Time const& timeout)
 {
     this->timeout = timeout;
 }
 
 bool SatcommsStatusManager::getURLData()
 {
-    curl_global_init(CURL_GLOBAL_ALL);
     CURL* curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_URL, url_link.c_str());
     // disable progress meter, set to 0L to enable it
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, timeout.toMilliseconds());
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &url_data);
+
+    string data;
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &data);
 
     int curl_code = curl_easy_perform(curl_handle);
+    if (curl_code != CURLE_OK) {
+        return false;
+    }
+
     long http_code = 0;
     curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 
     /* cleanup curl stuff */
     curl_easy_cleanup(curl_handle);
-    curl_global_cleanup();
 
-    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
-        return true;
-    }
-    return false;
+    url_data = data;
+    return (http_code == 200);
 }
 
-map<string, string> SatcommsStatusManager::processText(vector<string> status_id)
+map<string, string> SatcommsStatusManager::processText(vector<string> const& status_id)
 {
     map<string, string> status;
     boost::smatch matches;
@@ -105,12 +107,12 @@ SatcommsStatus SatcommsStatusManager::parseSatcommsStatus()
     return status;
 }
 
-float SatcommsStatusManager::convertStringToFloat(string const text)
+float SatcommsStatusManager::convertStringToFloat(string const& text)
 {
     try {
         return stof(text);
     }
-    catch (invalid_argument) {
+    catch (invalid_argument const&) {
         LOG_ERROR_S << "could not parse " << text << " as float" << endl;
         return base::unknown<float>();
     }

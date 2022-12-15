@@ -33,8 +33,8 @@ namespace satcomms_kvh {
         base::Time timeout = base::Time::fromSeconds(1);
         SatcommsStatusManager();
 
-        void setURL(std::string url);
-        void setTimeout(base::Time timeout);
+        void setURL(std::string const& url);
+        void setTimeout(base::Time const& timeout);
         /** Callback function used by the curl library to fill variable with the HTML
          * content
          */
@@ -49,7 +49,7 @@ namespace satcomms_kvh {
         /**  This function process the html page and searches all the keywords
          */
         std::map<std::string, std::string> processText(
-            std::vector<std::string> status_id);
+            std::vector<std::string> const& status_id);
         /**  Return the the struct SatcomsStatus with the obtained data
          */
         SatcommsStatus getSatcommsStatus();
@@ -58,7 +58,7 @@ namespace satcomms_kvh {
          */
         SatcommsStatus parseSatcommsStatus();
 
-        float convertStringToFloat(std::string const text);
+        float convertStringToFloat(std::string const& text);
     };
 
 } // end namespace satcomms_kvh
