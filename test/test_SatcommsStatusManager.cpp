@@ -7,7 +7,8 @@
 
 using namespace satcomms_kvh;
 
-struct SatcommsStatusManagerTest : public ::testing::Test {};
+struct SatcommsStatusManagerTest : public ::testing::Test {
+};
 
 TEST_F(SatcommsStatusManagerTest, it_should_not_crash_when_get_url_is_called)
 {
