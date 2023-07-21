@@ -1,8 +1,8 @@
 #ifndef _SATCOMMSSTATUSPROJECT_SATCOMMS_STATUS_HPP
 #define _SATCOMMSSTATUSPROJECT_SATCOMMS_STATUS_HPP
 
-#include <string>
 #include <base/Time.hpp>
+#include <string>
 
 namespace satcomms_kvh {
     struct SatcommsStatus {
